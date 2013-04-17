@@ -34,6 +34,10 @@ php -r "$script" > current_php_version
 cd - > /dev/null 2>&1
 
 echo "Restarting Apache."
+# Kill all apache processes so the new libphp.so file is loaded correctly
+sudo pkill -9 httpd
+
+# Restart apache
 sudo apachectl -k restart > /dev/null 2>&1
 
 echo "Done!"

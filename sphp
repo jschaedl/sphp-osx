@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Where am I? Take me home now!
+cd ~/.bin/php_version_switch/
+
+# Check the current version (useful if this script is run for the first time)
+php -r "if ( strpos(phpversion(), '5.3') !== false ) { echo 'php53'; } else { echo 'php54'; }" > current_php_version
+
+# Get the version into a var
+value=$(<current_php_version)
+
+# Change the php version using brew
+if [ $value == php53 ]; then
+	brew unlink php53
+	brew link php54
+elif [ $value == php54 ]; then
+	brew unlink php54
+	brew link php53
+fi
+
+# Refresh the current version file
+php -r "if ( strpos(phpversion(), '5.3') !== false ) { echo 'php53'; } else { echo 'php54'; }" > current_php_version
+
+# Back, we're done !
+cd -

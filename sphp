@@ -1,43 +1,35 @@
 #!/bin/bash
 
-# Where am I? Take me home now!
-cd ~/.bin/php_version_switch/ > /dev/null 2>&1
-
-# Find the current php version
-script="if ( strpos(phpversion(), '5.3') !== false ) { echo 'php53'; } else { echo 'php54'; }"
-
-# Check the current version (useful if this script is run for the first time)
-php -r "$script" > current_php_version
-
-# Get the version into a var
-value="$(<current_php_version)"
-
-# Change the php version using brew, from php53 to php54
-if [ $value == "php53" ]; then
-	brew unlink php53 > /dev/null 2>&1
-	brew link php54 > /dev/null 2>&1
-	sudo ln -sf `brew list php54 | grep libphp` /usr/local/lib/libphp5.so
-	echo "Switched to 5.4."
-
-# if php54 is on, switch to php53
-elif [ $value == "php54" ]; then
-	brew unlink php54 > /dev/null 2>&1
-	brew link php53 > /dev/null 2>&1
-	sudo ln -sf `brew list php53 | grep libphp` /usr/local/lib/libphp5.so
-	echo "Switched to 5.3."
+if [ $# -ne 1 ]; then
+	echo "Usage: sphp [phpversion]"
+	exit 1
 fi
 
-# Refresh the current version file
-php -r "$script" > current_php_version
+currentversion="`php -r \"echo str_replace('.', '', substr(phpversion(), 0, 3));\"`"
+newversion="$1"
 
-# Back, we're done !
-cd - > /dev/null 2>&1
+brew list php$newversion 2> /dev/null > /dev/null
 
-echo "Restarting Apache."
-# Kill all apache processes so the new libphp.so file is loaded correctly
-sudo pkill -9 httpd
+if [ $? -eq 0 ]; then
+	echo "PHP version $newversion found"
 
-# Restart apache
-sudo apachectl -k restart > /dev/null 2>&1
+	echo "Unlinking old binaries..."
+	brew unlink php$currentversion 2> /dev/null > /dev/null
 
-echo "Done!"
+	echo "Linking new binaries..."
+	brew link php$newversion
+
+	echo "Linking new modphp addon..."
+	sudo ln -sf `brew list php$newversion | grep libphp` /usr/local/lib/libphp5.so
+
+	echo "Updating version file..."
+
+	echo "Restarting Apache..."
+	sudo pkill -9 httpd
+	sudo apachectl -k restart > /dev/null 2>&1
+
+	echo "Done."
+else
+	echo "PHP version $newversion was not found."
+	exit 1
+fi

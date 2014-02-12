@@ -4,7 +4,7 @@ If you're on OSX with PHP installed via Brew, you may be looking for an easy way
 
 Installation:
 ```
-git clone git@github.com:conradkleinespel/sphp-osx.git ~/.bin/sphp-osx
+git clone git@github.com:conradkleinespel/sphp-osx.git
 ```
 
 Usage:

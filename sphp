@@ -28,6 +28,10 @@ if [ $? -eq 0 ]; then
 	sudo pkill -9 httpd
 	sudo apachectl -k restart > /dev/null 2>&1
 
+	echo "Updating CLI path..."
+	sudo rm /usr/local/opt/php5
+	sudo ln -s `brew --prefix php$newversion` /usr/local/opt/php5
+
 	echo "Done."
 else
 	echo "PHP version $newversion was not found."

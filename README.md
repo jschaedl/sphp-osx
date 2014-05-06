@@ -13,3 +13,11 @@ Usage:
 ./sphp-osx/sphp 54
 ./sphp-osx/sphp 55
 ```
+
+For command line path, you should update the `$PATH` variable in either your `.profile`, `.zshrc`, `.bashrc` or `.bash_profile`:
+
+```sh
+# Comment out the original one
+# export PATH="$(brew --prefix homebrew/php/php54)/bin:$PATH"
+export PATH="/usr/local/opt/php5/bin:$PATH"
+```

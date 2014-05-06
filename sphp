@@ -30,7 +30,7 @@ if [ $? -eq 0 ]; then
 
 	echo "Updating CLI path..."
 	sudo rm /usr/local/opt/php5
-	sudo ln -s `brew --prefix josegonzalez/php/php$newversion` /usr/local/opt/php5
+	sudo ln -s `brew --prefix php$newversion` /usr/local/opt/php5
 
 	echo "Done."
 else

@@ -24,9 +24,18 @@ if [ $? -eq 0 ]; then
 
 	echo "Updating version file..."
 
-	echo "Restarting Apache..."
-	sudo pkill -9 httpd
-	sudo apachectl -k restart > /dev/null 2>&1
+	pgrep -f /usr/sbin/httpd 2> /dev/null > /dev/null
+	if [ $? -eq 0 ]; then
+		echo "Restarting system Apache..."
+		sudo pkill -9 -f /usr/sbin/httpd
+		sudo /usr/sbin/apachectl -k restart > /dev/null 2>&1
+	fi
+	pgrep -f /usr/local/Cellar/*/httpd 2> /dev/null > /dev/null
+	if [ $? -eq 0 ]; then
+		echo "Restarting homebrew Apache..."
+		sudo pkill -9 -f /usr/local/Cellar/*/httpd
+		sudo /usr/local/bin/apachectl -k restart > /dev/null 2>&1
+	fi
 
 	echo "Done."
 else

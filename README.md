@@ -1,6 +1,6 @@
 # PHP version switcher for OSX
 
-If you're on OSX with PHP installed via Brew, you may be looking for an easy way to switch between PHP versions (5.3, 5.4, 5.5, etc). Well, this package is it.
+If you're on OSX with PHP installed via Brew, you may be looking for an easy way to switch between PHP versions (5.3, 5.4, 5.5, 5.6, etc). Well, this package is it.
 
 Installation:
 ```

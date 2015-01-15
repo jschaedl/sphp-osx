@@ -18,6 +18,7 @@ Usage:
 ./sphp-osx/sphp 53
 ./sphp-osx/sphp 54
 ./sphp-osx/sphp 55
+./sphp-osx/sphp 56
 ```
 
 ## Contributors

@@ -23,4 +23,5 @@ Usage:
 ## Contributors
 
 * @conradkleinespel
+* @sebastienbarre
 * @uzyn

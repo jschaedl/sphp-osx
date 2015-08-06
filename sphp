@@ -11,7 +11,6 @@ newversion="$1"
 shortOld="`php -r \"echo substr(phpversion(), 0, 1);\"`"
 shortNew="`php -r \"echo substr('$1', 0, 1);\"`"
 
-echo $majorNewVersion
 brew list php$newversion 2> /dev/null > /dev/null
 
 if [ $? -eq 0 ]; then

@@ -15,14 +15,26 @@ You may need to restart your shell for this to take effect.
 
 Usage:
 ```
-./sphp-osx/sphp 53
 ./sphp-osx/sphp 54
 ./sphp-osx/sphp 55
 ./sphp-osx/sphp 56
+./sphp-osx/sphp 70
 ```
+
+## Troubleshooting
+
+### PHP doesn't work anymore when I switch versions in Bash
+
+Bash has an executable path cache. It saves the paths of executables it has previously run. If Brew changes the path to the `php` executable, you may encounter
+this error. You have 2 options:
+- Add `set +h` in your `~/.bashrc` or `~/.profile` file. This will disable the executable path cache in Bash. However, this might slow down your Bash.
+- After you use `sphp`, enter the command `hash -r` in your shell. This will clear the executable path cache only once.
 
 ## Contributors
 
-* @conradkleinespel
-* @sebastienbarre
-* @uzyn
+* [@alefi87](https://github.com/alefi87)
+* [@conradkleinespel](https://github.com/conradkleinespel)
+* [@michaelburtonray](https://github.com/michaelburtonray)
+* [@sebastienbarre](https://github.com/sebastienbarre)
+* [@uzyn](https://github.com/uzyn)
+* [@w00fz](https://github.com/w00fz)

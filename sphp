@@ -8,6 +8,9 @@ fi
 currentversion="`php -r \"echo str_replace('.', '', substr(phpversion(), 0, 3));\"`"
 newversion="$1"
 
+shortOld="`php -r \"echo substr(phpversion(), 0, 1);\"`"
+shortNew="`php -r \"echo substr('$1', 0, 1);\"`"
+
 brew list php$newversion 2> /dev/null > /dev/null
 
 if [ $? -eq 0 ]; then
@@ -20,7 +23,12 @@ if [ $? -eq 0 ]; then
 	brew link php$newversion
 
 	echo "Linking new modphp addon..."
-	sudo ln -sf `brew list php$newversion | grep libphp` /usr/local/lib/libphp5.so
+	sudo ln -sf `brew list php$newversion | grep libphp` /usr/local/lib/libphp${shortNew}.so
+
+	echo "Fixing LoadModule..."
+	apacheConf=`httpd -V | grep -i server_config_file | cut -d '"' -f 2`
+	sudo sed -i -e "/LoadModule php${shortOld}_module/s/^#*/#/" $apacheConf
+	sudo sed -i -e "/LoadModule php${shortNew}_module/s/^#//" $apacheConf
 
 	echo "Updating version file..."
 

@@ -5,11 +5,11 @@ if [ $# -ne 1 ]; then
 	exit 1
 fi
 
-currentversion="`php -r \"echo str_replace('.', '', substr(phpversion(), 0, 3));\"`"
+currentversion="`php -r \"error_reporting(0); echo str_replace('.', '', substr(phpversion(), 0, 3));\"`"
 newversion="$1"
 
-shortOld="`php -r \"echo substr(phpversion(), 0, 1);\"`"
-shortNew="`php -r \"echo substr('$1', 0, 1);\"`"
+shortOld="`php -r \"error_reporting(0); echo substr(phpversion(), 0, 1);\"`"
+shortNew="`php -r \"error_reporting(0); echo substr('$1', 0, 1);\"`"
 
 brew list php$newversion 2> /dev/null > /dev/null
 

@@ -28,7 +28,7 @@ if [ $? -eq 0 ]; then
 	echo "Fixing LoadModule..."
 	apacheConf=`httpd -V | grep -i server_config_file | cut -d '"' -f 2`
 	sudo sed -i -e "/LoadModule php${shortOld}_module/s/^#*/#/" $apacheConf
-	sudo sed -i -e "/LoadModule php${shortNew}_module/s/^#//" $apacheConf
+	sudo sed -i -e "/LoadModule php${shortNew}_module \/usr\/local\/opt\/php${newversion}/s/^#//" $apacheConf
 
 	echo "Updating version file..."
 

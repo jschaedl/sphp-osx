@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Check if command was ran as root.
+if [[ $(id -u) -eq 0 ]]; then
+    echo "The command \"sphp\" should not be executed as root or via sudo directly."
+    echo "When a service requires root access, you will be prompted for a password as needed."
+    exit 1
+fi
+
+# Usage
 if [ $# -ne 1 ]; then
 	echo "Usage: sphp [phpversion]"
 	echo "Versions installed:"

@@ -2,6 +2,11 @@
 
 if [ $# -ne 1 ]; then
 	echo "Usage: sphp [phpversion]"
+	echo "Versions installed:"
+	brew list | grep '^php[0-9]\{2,\}$' | grep -o -E '[0-9]+' | while read -r line ; do
+    	echo " - phpversion: $line"
+	    # your code goes here
+	done
 	exit 1
 fi
 

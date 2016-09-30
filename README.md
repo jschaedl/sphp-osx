@@ -38,3 +38,5 @@ this error. You have 2 options:
 * [@sebastienbarre](https://github.com/sebastienbarre)
 * [@uzyn](https://github.com/uzyn)
 * [@w00fz](https://github.com/w00fz)
+* [@markcarver](https://github.com/markcarver)
+* [@maztch](https://github.com/maztch)

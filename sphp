@@ -49,12 +49,12 @@ if [ $? -eq 0 ]; then
 	brew link php$newversion
 
 	echo "Linking new modphp addon..."
-	sudo ln -sf `brew list php$newversion | grep libphp` /usr/local/lib/libphp${shortNew}.so
+	sudo ln -sf `brew list php$newversion | grep libphp` /usr/local/lib/libphp${majorNew}.so
 
 	echo "Fixing LoadModule..."
 	apacheConf=`httpd -V | grep -i server_config_file | cut -d '"' -f 2`
 	sudo sed -i -e "/LoadModule php${majorOld}_module/s/^#*/#/" $apacheConf
-	sudo sed -i -e "/LoadModule php${majorNew}_module \/usr\/local\/opt\/php${newversion}/s/^#//" $apacheConf
+	sudo sed -i -e "/LoadModule php${majorNew}_module/s/^#//" $apacheConf
 
 	echo "Updating version file..."
 

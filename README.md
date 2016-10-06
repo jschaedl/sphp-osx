@@ -19,6 +19,7 @@ Usage:
 ./sphp-osx/sphp 55
 ./sphp-osx/sphp 56
 ./sphp-osx/sphp 70
+./sphp-osx/sphp 71
 ```
 
 ## Troubleshooting
@@ -40,3 +41,4 @@ this error. You have 2 options:
 * [@w00fz](https://github.com/w00fz)
 * [@markcarver](https://github.com/markcarver)
 * [@maztch](https://github.com/maztch)
+* [@@sgotre](https://github.com/sgotre)

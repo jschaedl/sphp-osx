@@ -54,7 +54,12 @@ if [ $? -eq 0 ]; then
 	echo "Fixing LoadModule..."
 	apacheConf=`httpd -V | grep -i server_config_file | cut -d '"' -f 2`
 	sudo sed -i -e "/LoadModule php${majorOld}_module/s/^#*/#/" $apacheConf
-	sudo sed -i -e "/LoadModule php${majorNew}_module \/usr\/local\/opt\/php${newversion}/s/^#//" $apacheConf
+	if grep "LoadModule php${majorNew}_module .*php${newversion}" $apacheConf > /dev/null
+	then 
+		sudo sed -i -e "/LoadModule php${majorNew}_module .*php${newversion}/s/^#//" $apacheConf
+	else
+		sudo sed -i -e "/LoadModule php${majorNew}_module/s/^#//" $apacheConf
+	fi
 
 	echo "Updating version file..."
 

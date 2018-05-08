@@ -48,12 +48,9 @@ if [ $? -eq 0 ]; then
 	echo "Linking new binaries..."
 	brew link --force php$newversion
 
-	echo "Linking new modphp addon..."
-	sudo ln -sf `brew list php$newversion | grep libphp` /usr/local/lib/libphp${majorNew}.so
-
 	echo "Fixing LoadModule..."
 	apacheConf=`httpd -V | grep -i server_config_file | cut -d '"' -f 2`
-	sudo sed -i -e "/LoadModule php${majorOld}_module/s/^#*/#/" $apacheConf
+	sudo sed -i -e "/LoadModule php._module/s/^#*/#/g" $apacheConf
 
 	if grep "LoadModule php${majorNew}_module .*php${newversion}" $apacheConf > /dev/null
 	then 

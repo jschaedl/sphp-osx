@@ -1,91 +1,169 @@
 #!/bin/bash
+# Creator: Phil Cook
+# Email: phil@phil-cook.com
+# Twitter: @p_cook
+brew_prefix=$(brew --prefix | sed 's#/#\\\/#g')
 
-# Check if command was ran as root.
-if [[ $(id -u) -eq 0 ]]; then
-    echo "The command \"sphp\" should not be executed as root or via sudo directly."
-    echo "When a service requires root access, you will be prompted for a password as needed."
-    exit 1
+brew_array=("5.6","7.0","7.1","7.2")
+php_array=("php@5.6" "php@7.0" "php@7.1" "php@7.2")
+valet_support_php_version_array=("php@5.6" "php@7.0" "php@7.1" "php@7.2")
+php_installed_array=()
+php_version="php@$1"
+php_opt_path="$brew_prefix\/opt\/"
+
+php5_module="php5_module"
+apache_php5_lib_path="\/lib\/httpd\/modules\/libphp5.so"
+php7_module="php7_module"
+apache_php7_lib_path="\/lib\/httpd\/modules\/libphp7.so"
+native_osx_php_apache_module="LoadModule php5_module libexec\/apache2\/libphp5.so"
+
+php_module="$php5_module"
+apache_php_lib_path="$apache_php5_lib_path"
+
+# Has the user submitted a version required
+if [[ -z "$1" ]]
+then
+	echo "usage: sphp version [-s|-s=*] [-c=*]"; echo;
+	echo "    version    one of:" ${brew_array[@]};
+	echo "    -s         skip change of mod_php on apache";
+	echo "    -s=*         skip change of mod_php on apache or valet restart i.e (apache|valet,apache|valet)";
+	echo "    -c=*         switch a specific config (apache|valet,apache|valet"; echo;
+	exit
 fi
 
-# Usage
-if [ $# -ne 1 ]; then
-	echo "Usage: sphp [phpversion]"
-	echo "Versions installed:"
-	brew list | grep '^php[0-9]\{2,\}$' | grep -o -E '[0-9]+' | while read -r line ; do
-    	echo " - phpversion: $line"
-	    # your code goes here
-	done
-	exit 1
+if [ $(echo "$php_version" | sed 's/^php@//' | sed 's/\.//') -ge 70 ]; then
+	php_module="$php7_module"
+	apache_php_lib_path="$apache_php7_lib_path"
 fi
 
-currentversion="`php -r \"error_reporting(0); echo str_replace('.', '', substr(phpversion(), 0, 3));\"`"
-newversion="$1"
+apache_change=1
+apache_conf_path="/usr/local/etc/httpd/httpd.conf"
+apache_php_mod_path="$php_opt_path$php_version$apache_php_lib_path"
 
-majorOld=${currentversion:0:1}
-majorNew=${newversion:0:1}
-minorNew=${newversion:1:1}
+valet_restart=0
+# Check if valet is already install
+hash valet 2>/dev/null && valet_installed=1 || valet_installed=0
 
-brew list php$newversion 2> /dev/null > /dev/null
+POSITIONAL=()
 
-if [ $? -eq 0 ]; then
-	echo "PHP version $newversion found"
+# Check for skip & change flag
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+        # This is a flag type option. Will catch either -s or --skip
+        -s|-s=*|--skip=*)
+        if  [[  "${1#*=}" == "-s" || "${1#*=}" == *"apache"* ]]; then
+            apache_change=0
+        elif [ "${1#*=}" == "valet" ]; then
+            valet_restart=0
+        fi
+        ;;
+        # This is a flag type option. Will catch either -c or --change
+        -c=*|--change=*)
+             [[ "$1" == *"apache"* ]] && apache_change=1 || apache_change=0
+             [[ "$1" == *"valet"* ]] && valet_restart=1 || valet_restart=0
+        ;;
+        *)
+        POSITIONAL+=("$1") # save it in an array for later
+        ;;
+    esac
+    # Shift after checking all the cases to get the next option
+    shift
+done
 
-	# Check if new version is already the current version.
-	if [ "${newversion}" == "${currentversion}" ]; then
-	    echo -n "PHP version ${newversion} is already being used. Continue by reloading? (y/n) "
-	    while true; do
-	        read -n 1 yn
-	        case $yn in
-	            [Yy]* ) echo && break;;
-	            [Nn]* ) echo && exit 1;;
-	        esac
-	    done
-	fi
+# What versions of php are installed via brew
+for i in ${php_array[*]}
+	do
+		if [[ -n "$(brew ls --versions "$i")" ]]
+		then
+			php_installed_array+=("$i")
+		fi
+done
 
-	echo "Unlinking old binaries..."
-	brew unlink php$currentversion 2> /dev/null > /dev/null
+# Check if php version support via valet
+if [[ (" ${valet_support_php_version_array[*]} " != *"$php_version"*) && ($valet_restart -eq 1) ]]
+then
+    echo "Sorry, but $php_version is not support via valet";
+    exit;
+fi
 
-	echo "Linking new binaries..."
-	brew link --force php$newversion
+# Check that the requested version is supported
+if [[ " ${php_array[*]} " == *"$php_version"* ]]
+then
+	# Check that the requested version is installed
+	if [[ " ${php_installed_array[*]} " == *"$php_version"* ]]
+	then
 
-	echo "Fixing LoadModule..."
-	apacheConf=`httpd -V | grep -i server_config_file | cut -d '"' -f 2`
-	sudo sed -i -e "/LoadModule php._module/s/^#*/#/g" $apacheConf
+	    # Stop valet service
+		if [[ ($valet_installed -eq 1) && ($valet_restart -eq 1) ]]; then
+		   echo "Stop Valet service";
+		   valet stop;
+		fi
 
-	if grep "LoadModule php${majorNew}_module .*php${newversion}" $apacheConf > /dev/null
-	then 
-		sudo sed -i -e "/LoadModule php${majorNew}_module .*php${newversion}/s/^#//" $apacheConf
+		# Switch Shell
+		echo "Switching to $php_version"
+		echo "Switching your shell"
+		for i in ${php_installed_array[@]}
+		do
+			if [[ -n $(brew ls --versions $i) ]]
+			then
+				brew unlink $i
+			fi
+		done
+		brew link --force "$php_version"
+
+		# Switch apache
+		if [[ $apache_change -eq 1 ]]; then
+			echo "You will need sudo power from now on"
+			echo "Switching your apache conf"
+
+			for j in ${php_installed_array[@]}
+			do
+				loop_php_module="$php5_module"
+				loop_apache_php_lib_path="$apache_php5_lib_path"
+				if [ $(echo "$j" | sed 's/^php@//' | sed 's/\.//') -ge 70 ]; then
+					loop_php_module="$php7_module"
+					loop_apache_php_lib_path="$apache_php7_lib_path"
+				fi
+				apache_module_string="LoadModule $loop_php_module $php_opt_path$j$loop_apache_php_lib_path"
+				comment_apache_module_string="#$apache_module_string"
+
+				# If apache module string within apache conf
+				if grep -q "$apache_module_string" "$apache_conf_path"; then
+					# If apache module string not commented out already
+					if ! grep -q "$comment_apache_module_string" "$apache_conf_path"; then
+						sudo sed -i.bak "s/$apache_module_string/$comment_apache_module_string/g" $apache_conf_path
+					fi
+				# Else the string for the php module is not in the apache config then add it
+	 			else
+					sudo sed -i.bak "/$native_osx_php_apache_module/a\\
+$comment_apache_module_string\\
+" $apache_conf_path
+				fi
+			done
+			sudo sed -i.bak "s/\#LoadModule $php_module $apache_php_mod_path/LoadModule $php_module $apache_php_mod_path/g" $apache_conf_path
+			echo "Restarting apache"
+			sudo apachectl restart
+		fi
+
+
+        # Switch valet
+		if [[ $valet_restart -eq 1 ]]; then
+		    if [[ valet_installed -eq 1 ]]; then
+                valet restart
+             else
+               echo "valet doesn't installed in your system, will skip restarting valet service";
+            fi
+        fi
+
+        echo ""
+        php -v
+        echo ""
+
+		echo "All done!"
 	else
-		sudo sed -i -e "/LoadModule php${majorNew}_module/s/^#//" $apacheConf
+		echo "Sorry, but $php_version is not installed via brew. Install by running: brew install $php_version"
 	fi
-
-
-	echo "Updating version file..."
-
-	pgrep -f /usr/sbin/httpd 2> /dev/null > /dev/null
-	if [ $? -eq 0 ]; then
-		echo "Restarting system Apache..."
-		sudo pkill -9 -f /usr/sbin/httpd
-		sudo /usr/sbin/apachectl -k restart > /dev/null 2>&1
-	fi
-	pgrep -f /usr/local/Cellar/*/httpd 2> /dev/null > /dev/null
-	if [ $? -eq 0 ]; then
-		echo "Restarting homebrew Apache..."
-		sudo pkill -9 -f /usr/local/Cellar/*/httpd
-		sudo /usr/local/bin/apachectl -k restart > /dev/null 2>&1
-	fi
-	pgrep -x httpd 2> /dev/null > /dev/null
-	if [ $? -eq 0 ]; then
-		echo "Restarting non-root homebrew Apache..."
-		httpd -k restart > /dev/null 2>&1
-	fi
-
-	echo "Done."
-
-	# Show PHP CLI version for verification.
-	echo && php -v
 else
-	echo "PHP version $majorNew.$minorNew was not found."
-	echo "Try \`brew install php${newversion}\` first."
-	exit 1
+	echo "Unknown version of PHP. PHP Switcher can only handle arguments of:" ${brew_array[@]}
 fi

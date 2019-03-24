@@ -114,7 +114,6 @@ then
 
 		# Switch apache
 		if [[ $apache_change -eq 1 ]]; then
-			echo "You will need sudo power from now on"
 			echo "Switching your apache conf"
 
 			for j in ${php_installed_array[@]}
@@ -132,18 +131,18 @@ then
 				if grep -q "$apache_module_string" "$apache_conf_path"; then
 					# If apache module string not commented out already
 					if ! grep -q "$comment_apache_module_string" "$apache_conf_path"; then
-						sudo sed -i.bak "s/$apache_module_string/$comment_apache_module_string/g" $apache_conf_path
+						sed -i.bak "s/$apache_module_string/$comment_apache_module_string/g" $apache_conf_path
 					fi
 				# Else the string for the php module is not in the apache config then add it
 	 			else
-					sudo sed -i.bak "/$native_osx_php_apache_module/a\\
+					sed -i.bak "/$native_osx_php_apache_module/a\\
 $comment_apache_module_string\\
 " $apache_conf_path
 				fi
 			done
-			sudo sed -i.bak "s/\#LoadModule $php_module $apache_php_mod_path/LoadModule $php_module $apache_php_mod_path/g" $apache_conf_path
+			sed -i.bak "s/\#LoadModule $php_module $apache_php_mod_path/LoadModule $php_module $apache_php_mod_path/g" $apache_conf_path
 			echo "Restarting apache"
-			sudo apachectl restart
+			brew services restart httpd
 		fi
 
 

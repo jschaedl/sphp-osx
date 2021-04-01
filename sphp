@@ -4,9 +4,9 @@
 # Twitter: @p_cook
 brew_prefix=$(brew --prefix | sed 's#/#\\\/#g')
 
-brew_array=("5.6","7.0","7.1","7.2","7.3","7.4")
-php_array=("php@5.6" "php@7.0" "php@7.1" "php@7.2" "php@7.3","php@7.4")
-valet_support_php_version_array=("php@5.6" "php@7.0" "php@7.1" "php@7.2" "php@7.3","php@7.4")
+brew_array=("5.6","7.0","7.1","7.2","7.3","7.4","8.0")
+php_array=("php@5.6" "php@7.0" "php@7.1" "php@7.2" "php@7.3","php@7.4","php@8.0")
+valet_support_php_version_array=("php@5.6" "php@7.0" "php@7.1" "php@7.2" "php@7.3","php@7.4","php@8.0")
 php_installed_array=()
 php_version="php@$1"
 php_opt_path="$brew_prefix\/opt\/"
@@ -15,6 +15,8 @@ php5_module="php5_module"
 apache_php5_lib_path="\/lib\/httpd\/modules\/libphp5.so"
 php7_module="php7_module"
 apache_php7_lib_path="\/lib\/httpd\/modules\/libphp7.so"
+php8_module="php_module"
+apache_php8_lib_path="\/lib\/httpd\/modules\/libphp.so"
 native_osx_php_apache_module="LoadModule php5_module libexec\/apache2\/libphp5.so"
 
 php_module="$php5_module"

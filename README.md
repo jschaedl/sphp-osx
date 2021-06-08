@@ -15,11 +15,12 @@ You may need to restart your shell for this to take effect.
 
 Usage:
 ```
-./sphp-osx/sphp 56
-./sphp-osx/sphp 70
-./sphp-osx/sphp 71
-./sphp-osx/sphp 72
-./sphp-osx/sphp 73
+./sphp-osx/sphp 5.6
+./sphp-osx/sphp 7.0
+./sphp-osx/sphp 7.1
+./sphp-osx/sphp 7.2
+./sphp-osx/sphp 7.3
+./sphp-osx/sphp 8.0
 ```
 
 ## Troubleshooting
@@ -41,4 +42,5 @@ this error. You have 2 options:
 * [@w00fz](https://github.com/w00fz)
 * [@markcarver](https://github.com/markcarver)
 * [@maztch](https://github.com/maztch)
+* [@anararo](https://github.com/anararo)
 * [@@sgotre](https://github.com/sgotre)

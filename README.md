@@ -4,7 +4,7 @@ If you're on OSX with PHP installed via Brew, you may be looking for an easy way
 
 Installation:
 ```
-git clone git@github.com:sgotre/sphp-osx.git
+git clone git@github.com:jschaedl/sphp-osx.git
 ```
 
 Add `/usr/local/bin` to your `$PATH`. If you use the Bash shell, you can do this by running this command:
@@ -42,5 +42,5 @@ this error. You have 2 options:
 * [@w00fz](https://github.com/w00fz)
 * [@markcarver](https://github.com/markcarver)
 * [@maztch](https://github.com/maztch)
-* [@anararo](https://github.com/anararo)
 * [@@sgotre](https://github.com/sgotre)
+* [@anararo](https://github.com/anararo)

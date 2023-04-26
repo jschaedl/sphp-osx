@@ -131,7 +131,7 @@ then
 					loop_php_module="$php7_module"
 					loop_apache_php_lib_path="$apache_php7_lib_path"
 				fi
-				if [ $(echo "$j" | sed 's/^php@//' | sed 's/\.//') -ge 70 ]; then
+				if [ $(echo "$j" | sed 's/^php@//' | sed 's/\.//') -ge 80 ]; then
 					loop_php_module="$php8_module"
 					loop_apache_php_lib_path="$apache_php8_lib_path"
 				fi

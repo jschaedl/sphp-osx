@@ -13,12 +13,18 @@ brew_prefix=$(echo "$brew_prefix_raw" | sed 's#/#\\\/#g')
 # Detect installed PHP versions from brew (no hardcoded list to maintain)
 brew_installed=$(brew list --formula 2>/dev/null)
 php_installed_array=($(echo "$brew_installed" | grep '^php@' | sort -t@ -k2 -V))
-# The latest PHP is installed as "php" not "php@X.Y" — detect it from the Cellar
+# The latest PHP is installed as "php" not "php@X.Y" — detect its version
+php_main_ver=""
 if echo "$brew_installed" | grep -q '^php$'; then
-    php_main_ver=$(ls "$brew_prefix_raw/Cellar/php/" | head -1 | cut -d. -f1,2)
-    php_installed_array+=("php@$php_main_ver")
+    php_main_ver=$(basename "$(readlink "$brew_prefix_raw/opt/php")" | cut -d. -f1,2)
+    php_installed_array+=("php")
 fi
-php_version="php@$1"
+# Map user-requested version to the correct brew formula name
+if [[ "$1" == "$php_main_ver" ]]; then
+    php_version="php"
+else
+    php_version="php@$1"
+fi
 php_opt_path="$brew_prefix\/opt\/"
 
 php5_module="php5_module"
@@ -36,14 +42,22 @@ apache_php_lib_path="$apache_php5_lib_path"
 if [[ -z "$1" ]]
 then
     echo "usage: sphp version [-s|-s=*] [-c=*]"; echo;
-    echo "    version    one of:" $(printf '%s ' "${php_installed_array[@]}" | sed 's/php@//g');
+    _versions=""
+    for _f in "${php_installed_array[@]}"; do
+        [[ "$_f" == "php" ]] && _versions+="$php_main_ver " || _versions+="${_f#php@} "
+    done
+    echo "    version    one of: $_versions";
     echo "    -s         skip change of mod_php on apache";
     echo "    -s=*         skip change of mod_php on apache or valet restart i.e (apache|valet,apache|valet)";
     echo "    -c=*         switch a specific config (apache|valet,apache|valet"; echo;
     exit
 fi
 
-php_version_num=$(echo "$php_version" | sed 's/^php@//' | sed 's/\.//')
+if [[ "$php_version" == "php" ]]; then
+    php_version_num=$(echo "$php_main_ver" | sed 's/\.//')
+else
+    php_version_num=$(echo "$php_version" | sed 's/^php@//' | sed 's/\.//')
+fi
 if [ "$php_version_num" -ge 80 ]; then
     php_module="$php8_module"
     apache_php_lib_path="$apache_php8_lib_path"
@@ -88,7 +102,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check that the requested version is installed
-if [[ " ${php_installed_array[*]} " == *"$php_version"* ]]
+if [[ " ${php_installed_array[*]} " == *" $php_version "* ]]
 then
 
         # Stop valet service
@@ -114,7 +128,11 @@ then
             do
                 loop_php_module="$php5_module"
                 loop_apache_php_lib_path="$apache_php5_lib_path"
-                loop_ver_num=$(echo "$j" | sed 's/^php@//' | sed 's/\.//')
+                if [[ "$j" == "php" ]]; then
+                    loop_ver_num=$(echo "$php_main_ver" | sed 's/\.//')
+                else
+                    loop_ver_num=$(echo "$j" | sed 's/^php@//' | sed 's/\.//')
+                fi
                 if [ "$loop_ver_num" -ge 80 ]; then
                     loop_php_module="$php8_module"
                     loop_apache_php_lib_path="$apache_php8_lib_path"

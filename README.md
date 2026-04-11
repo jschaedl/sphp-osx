@@ -2,12 +2,17 @@
 
 If you're on OSX with PHP installed via Brew, you may be looking for an easy way to switch between PHP versions (5.6, 7.0, 7.1, 7.2 etc). Well, this package is it.
 
-Installation:
+Quick install:
+```
+curl -sL https://raw.githubusercontent.com/jschaedl/sphp-osx/main/sphp -o /usr/local/bin/sphp && chmod 755 /usr/local/bin/sphp
+```
+
+Or clone the repository:
 ```
 git clone git@github.com:jschaedl/sphp-osx.git
 ```
 
-Add `/usr/local/bin` to your `$PATH`. If you use the Bash shell, you can do this by running this command:
+Make sure `/usr/local/bin` is in your `$PATH`. If you use the Bash shell, you can do this by running:
 ```
 echo 'export PATH="/usr/local/bin:$PATH"' >> $HOME/.bashrc
 ```
@@ -15,12 +20,8 @@ You may need to restart your shell for this to take effect.
 
 Usage:
 ```
-./sphp-osx/sphp 5.6
-./sphp-osx/sphp 7.0
-./sphp-osx/sphp 7.1
-./sphp-osx/sphp 7.2
-./sphp-osx/sphp 7.3
-./sphp-osx/sphp 8.0
+sphp 8.1
+sphp 8.5
 ```
 
 ## Troubleshooting

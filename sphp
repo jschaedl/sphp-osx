@@ -53,6 +53,12 @@ then
     exit
 fi
 
+# Validate version format
+if [[ ! "$1" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    echo "Error: Invalid version format '$1'. Expected: X.Y (e.g., 8.3)"
+    exit 1
+fi
+
 if [[ "$php_version" == "php" ]]; then
     php_version_num=$(echo "$php_main_ver" | sed 's/\.//')
 else
@@ -111,20 +117,46 @@ then
            valet stop;
         fi
 
+        # Detect current PHP for rollback on failure/interruption
+        original_php=""
+        if command -v php &>/dev/null; then
+            current_ver=$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;' 2>/dev/null)
+            if [[ -n "$current_ver" ]]; then
+                if [[ "$current_ver" == "$php_main_ver" ]]; then
+                    original_php="php"
+                else
+                    original_php="php@$current_ver"
+                fi
+            fi
+        fi
+
+        rollback_php() {
+            if [[ -n "$original_php" ]]; then
+                echo ""
+                echo "Interrupted — re-linking $original_php"
+                brew link --force "$original_php" &>/dev/null
+            fi
+        }
+        trap rollback_php INT TERM
+
         # Switch Shell
         echo "Switching to $php_version"
         echo "Switching your shell"
-        for i in ${php_installed_array[@]}
+        for i in "${php_installed_array[@]}"
         do
-            brew unlink $i
+            brew unlink "$i"
         done
-        brew link --force "$php_version"
+        if ! brew link --force "$php_version"; then
+            echo "Error: Failed to link $php_version"
+            rollback_php
+            exit 1
+        fi
 
         # Switch apache
         if [[ $apache_change -eq 1 ]]; then
             echo "Switching your apache conf"
 
-            for j in ${php_installed_array[@]}
+            for j in "${php_installed_array[@]}"
             do
                 loop_php_module="$php5_module"
                 loop_apache_php_lib_path="$apache_php5_lib_path"
@@ -147,16 +179,16 @@ then
                 if grep -q "$apache_module_string" "$apache_conf_path"; then
                     # If apache module string not commented out already
                     if ! grep -q "$comment_apache_module_string" "$apache_conf_path"; then
-                        sed -i.bak "s/$apache_module_string/$comment_apache_module_string/g" $apache_conf_path
+                        sed -i.bak "s/$apache_module_string/$comment_apache_module_string/g" "$apache_conf_path"
                     fi
                 # Else the string for the php module is not in the apache config then add it
                 else
                     sed -i.bak "/$native_osx_php_apache_module/a\\
 $comment_apache_module_string\\
-" $apache_conf_path
+" "$apache_conf_path"
                 fi
             done
-            sed -i.bak "s/\#LoadModule $php_module $apache_php_mod_path/LoadModule $php_module $apache_php_mod_path/g" $apache_conf_path
+            sed -i.bak "s/\#LoadModule $php_module $apache_php_mod_path/LoadModule $php_module $apache_php_mod_path/g" "$apache_conf_path"
             echo "Restarting apache"
             brew services restart httpd
         fi
@@ -164,7 +196,7 @@ $comment_apache_module_string\\
 
         # Switch valet
         if [[ $valet_restart -eq 1 ]]; then
-            if [[ valet_installed -eq 1 ]]; then
+            if [[ $valet_installed -eq 1 ]]; then
                 valet restart
              else
                echo "valet doesn't installed in your system, will skip restarting valet service";
@@ -175,6 +207,7 @@ $comment_apache_module_string\\
         php -v
         echo ""
 
+        trap - INT TERM
         echo "All done!"
 else
     echo "Sorry, but $php_version is not installed via brew. Install by running: brew install $php_version"
